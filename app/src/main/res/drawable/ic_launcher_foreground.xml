@@ -1,0 +1,46 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 1. 背景胶片边框装饰 (Film Strip style) -->
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M15,25 L93,25 Q98,25 98,30 L98,80 Q98,85 93,85 L15,85 Q10,85 10,80 L10,30 Q10,25 15,25 Z" />
+    <!-- 胶片孔 -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M14,30 h4 v4 h-4 z M14,40 h4 v4 h-4 z M14,50 h4 v4 h-4 z M14,60 h4 v4 h-4 z M14,70 h4 v4 h-4 z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M90,30 h4 v4 h-4 z M90,40 h4 v4 h-4 z M90,50 h4 v4 h-4 z M90,60 h4 v4 h-4 z M90,70 h4 v4 h-4 z" />
+
+    <!-- 2. 可爱小猪主体 (趴在按钮上) -->
+    <!-- 耳朵 -->
+    <path android:fillColor="#FFD1DC" android:pathData="M35,35 Q25,15 45,25 Z" />
+    <path android:fillColor="#FFD1DC" android:pathData="M73,35 Q83,15 63,25 Z" />
+    <!-- 脸蛋 -->
+    <path
+        android:fillColor="#FFF0F5"
+        android:pathData="M54,25 C35,25 22,35 22,55 C22,70 35,80 54,80 C73,80 86,70 86,55 C86,35 73,25 54,25 Z" />
+    <!-- 腮红 -->
+    <path android:fillColor="#FFB7C5" android:fillAlpha="0.5" android:pathData="M30,60 a6,4 0,1,0 12,0 a6,4 0,1,0 -12,0" />
+    <path android:fillColor="#FFB7C5" android:fillAlpha="0.5" android:pathData="M66,60 a6,4 0,1,0 12,0 a6,4 0,1,0 -12,0" />
+    <!-- 眼睛 -->
+    <path android:fillColor="#4A2C2A" android:pathData="M42,52 a3,3 0,1,1 6,0 a3,3 0,1,1 -6,0" />
+    <path android:fillColor="#4A2C2A" android:pathData="M60,52 a3,3 0,1,1 6,0 a3,3 0,1,1 -6,0" />
+    <!-- 鼻子 -->
+    <path android:fillColor="#FFB7C5" android:pathData="M54,60 q-8,0 -8,6 q0,6 8,6 q8,0 8,-6 q0,-6 -8,-6" />
+
+    <!-- 3. 粉色播放按钮 (小猪趴在上面) -->
+    <path
+        android:fillColor="#FF6B81"
+        android:pathData="M35,65 L73,65 Q80,65 80,72 L80,92 Q80,98 73,98 L35,98 Q28,98 28,92 L28,72 Q28,65 35,65 Z" />
+    <!-- 播放三角 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,75 L62,82 L50,89 Z" />
+
+    <!-- 4. 右侧闪亮小星星 -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M95,45 L97,50 L102,52 L97,54 L95,59 L93,54 L88,52 L93,50 Z" />
+
+</vector>
