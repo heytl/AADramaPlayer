@@ -2,9 +2,12 @@ package com.aa.duanju.ui.player
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
@@ -47,6 +50,11 @@ class PlayerActivity : AppCompatActivity() {
     private var currentPlayingPosition = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 播放器开启全透明沉浸，由于是播放视频，状态栏设为全透明
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
         
@@ -59,8 +67,7 @@ class PlayerActivity : AppCompatActivity() {
         
         adapter = VideoPagerAdapter(
             episodes = emptyList(),
-            onVideoClick = { position -> togglePlayPause(position) },
-            onVideoLongPress = { isPressed -> handleSpeed(isPressed) }
+            onVideoClick = { position -> togglePlayPause(position) }
         )
         viewPager.adapter = adapter
         
@@ -73,7 +80,6 @@ class PlayerActivity : AppCompatActivity() {
             val allDramas = db.dramaDao().getAllDramas()
             val currentIndex = allDramas.indexOfFirst { it.id == currentDrama?.id }
             
-            // 找到下一个短剧（如果到头了就从第一个开始循环）
             val nextDrama = if (currentIndex != -1 && currentIndex < allDramas.size - 1) {
                 allDramas[currentIndex + 1]
             } else {
@@ -105,21 +111,6 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleSpeed(isPressed: Boolean) {
-        val recyclerView = viewPager.getChildAt(0) as androidx.recyclerview.widget.RecyclerView
-        val viewHolder = recyclerView.findViewHolderForAdapterPosition(currentPlayingPosition) as? VideoPagerAdapter.VideoViewHolder
-        
-        viewHolder?.videoPlayer?.let { player ->
-            if (isPressed) {
-                player.setSpeed(2.0f, true)
-                tvSpeedTip.visibility = View.VISIBLE
-            } else {
-                player.setSpeed(1.0f, true)
-                tvSpeedTip.visibility = View.GONE
-            }
-        }
-    }
-
     private fun loadData() {
         val dramaId = intent.getLongExtra(EXTRA_DRAMA_ID, -1L)
         val episodeId = intent.getLongExtra(EXTRA_EPISODE_ID, -1L)
@@ -132,11 +123,9 @@ class PlayerActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 adapter.updateData(episodes)
                 
-                // 定位到请求的集数
                 val targetIndex = episodes.indexOfFirst { it.id == episodeId }
                 if (targetIndex >= 0) {
                     viewPager.setCurrentItem(targetIndex, false)
-                    // 如果等于 0 的话，onPageSelected 会立刻触发，无需手动 play 
                     if (targetIndex == 0) {
                         playPosition(0)
                     }
@@ -146,18 +135,12 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setupViewPager() {
-        // 利用 ViewPager2 回调处理滑动自动播放与释放上一集
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                
-                // 每次翻页，如果旧的等于当前的，忽略
                 if (currentPlayingPosition == position) return
-                
-                // 保存并释放上一个视频
                 saveProgress(currentPlayingPosition)
                 GSYVideoManager.releaseAllVideos()
-                
                 playPosition(position)
             }
         })
@@ -169,11 +152,9 @@ class PlayerActivity : AppCompatActivity() {
         val episode = episodes[position]
         
         tvTitle.text = "第 ${episode.episodeNumber} 集 - ${currentDrama?.title}"
-        // 初始播放时隐藏标题和返回按钮
         tvTitle.visibility = View.GONE
         btnBack.visibility = View.GONE
         
-        // 确保 ViewPager 切换完成后再寻找 ViewHolder
         viewPager.post {
             val recyclerView = viewPager.getChildAt(0) as androidx.recyclerview.widget.RecyclerView
             val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? VideoPagerAdapter.VideoViewHolder
@@ -185,7 +166,6 @@ class PlayerActivity : AppCompatActivity() {
                         if (currentPlayingPosition < episodes.size - 1) {
                             viewPager.setCurrentItem(currentPlayingPosition + 1, true)
                         } else {
-                            // 最后一集播放完，尝试跳转到下一个短剧
                             playNextDrama()
                         }
                     }
@@ -196,7 +176,6 @@ class PlayerActivity : AppCompatActivity() {
                     viewHolder.videoPlayer.seekTo(episode.lastPlaybackPosition)
                 }
             } else {
-                // 如果 ViewHolder 还没准备好，稍后再试一次
                 viewPager.postDelayed({ playPosition(position) }, 100)
             }
         }
@@ -213,12 +192,12 @@ class PlayerActivity : AppCompatActivity() {
                 player.onVideoPause()
                 tvTitle.visibility = View.VISIBLE
                 btnBack.visibility = View.VISIBLE
-                player.showUi() // 暂停时直接显示进度条和按钮
+                player.showUi() 
             } else {
                 player.onVideoResume()
                 tvTitle.visibility = View.GONE
                 btnBack.visibility = View.GONE
-                player.hideUi() // 播放时隐藏
+                player.hideUi()
             }
         }
     }
@@ -226,8 +205,8 @@ class PlayerActivity : AppCompatActivity() {
     private fun saveProgress(position: Int) {
         if (position < 0 || position >= episodes.size) return
         
-        val viewHolder = (viewPager.getChildAt(0) as androidx.recyclerview.widget.RecyclerView)
-                              .findViewHolderForAdapterPosition(position) as? VideoPagerAdapter.VideoViewHolder
+        val recyclerView = viewPager.getChildAt(0) as androidx.recyclerview.widget.RecyclerView
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? VideoPagerAdapter.VideoViewHolder
         
         viewHolder?.videoPlayer?.let { player ->
             val curPos = player.currentPositionWhenPlaying
@@ -237,7 +216,6 @@ class PlayerActivity : AppCompatActivity() {
                     val now = System.currentTimeMillis()
                     db.episodeDao().updatePlaybackPosition(episode.id, curPos.toLong(), now)
                     currentDrama?.let { drama ->
-                        // 更新电视剧最近观看时间
                         db.dramaDao().updateDrama(drama.copy(lastWatchedTime = now))
                     }
                 }

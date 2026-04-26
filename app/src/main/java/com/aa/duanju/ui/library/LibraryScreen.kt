@@ -93,38 +93,51 @@ fun LibraryScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
+            // 使用完全透明的背景，并减小高度感的视觉偏移
             TopAppBar(
-                title = { Text("阿阿短剧", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+                title = { 
+                    Text(
+                        "阿阿短剧", 
+                        fontSize = 22.sp, 
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.padding(top = 4.dp) // 微调标题高度
+                    ) 
+                },
                 actions = {
                     IconButton(onClick = { showDirManagement = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "目录管理", modifier = Modifier.size(28.dp))
+                        Icon(Icons.Default.Add, contentDescription = "目录管理", modifier = Modifier.size(26.dp))
                     }
                     IconButton(onClick = { libViewModel.rescanAll() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "刷新", modifier = Modifier.size(28.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                    containerColor = Color.Transparent, // 彻底透明，实现一体化
+                    scrolledContainerColor = Color.Transparent,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
+                ),
+                windowInsets = WindowInsets.statusBars // 仅处理状态栏，不增加额外 padding
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(horizontal = 16.dp)
+                .padding(top = padding.calculateTopPadding() - 8.dp) // 进一步压缩顶部间距，让内容上移
         ) {
             if (isScanning) {
                 LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            // 移除多余的 Spacer，让内容更贴近顶栏
+            // Spacer(modifier = Modifier.height(8.dp))
 
             if (recentEpisode != null && recentDrama != null) {
                 Surface(
@@ -355,8 +368,8 @@ fun DramaCard(drama: DramaEntity, lastEp: EpisodeEntity?, imageLoader: ImageLoad
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp), // 减低阴影，更扁平一体
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface) // 使用普通 surface
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),

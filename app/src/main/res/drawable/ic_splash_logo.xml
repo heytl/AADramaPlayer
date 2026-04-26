@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 核心修复：Android 12+ 强制对启动图标进行圆形裁剪（直径为图标的约 66%） -->
+<!-- 为了显示完整的带圆角的正方形/长方形图片，我们必须通过 inset 将原始图片缩小 -->
+<!-- 这样它就能完整地落在那个圆圈内部，看起来就是一个带圆角的 Logo 悬浮在背景上 -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/new_icon"
+    android:insetLeft="24dp"
+    android:insetRight="24dp"
+    android:insetTop="24dp"
+    android:insetBottom="24dp" />

@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -21,10 +24,30 @@ android {
         }
     }
 
+    // 加载本地配置用于签名，避免隐私泄露到 Git
+    val properties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { properties.load(it) }
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("JKS/my-release-key.jks")
+            storePassword = properties.getProperty("signing.storePassword")
+            keyAlias = properties.getProperty("signing.keyAlias")
+            keyPassword = properties.getProperty("signing.keyPassword")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // 只有当密码配置存在时才应用签名
+            if (properties.containsKey("signing.storePassword")) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {
@@ -54,6 +77,7 @@ android {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.documentfile:documentfile:1.0.1")

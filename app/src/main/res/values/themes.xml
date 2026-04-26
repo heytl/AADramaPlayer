@@ -1,9 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 主题配置：确保全局开启沉浸式体验 -->
     <style name="Theme.AADramaPlayer" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <!-- Optional: Primary brand color. -->
+        <!-- 基础品牌色 -->
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryDark">@color/purple_700</item>
         <item name="colorAccent">@color/teal_200</item>
+
+        <!-- 关键：确保启动后立即实现全透明状态栏/导航栏，防止视觉闪烁 -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- 适配刘海屏/挖孔屏：让内容填充到切口区域 -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+    <!-- 启动开屏页专用主题：使用官方 SplashScreen 库 -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- 设置启动页背景色：与 App 图标背景一致，保持视觉连贯 -->
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <!-- 设置启动页图标：使用包装后的居中图标，防止被系统裁剪 -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <!-- 设置启动后的目标主题 -->
+        <item name="postSplashScreenTheme">@style/Theme.AADramaPlayer</item>
     </style>
 </resources>
