@@ -122,8 +122,4 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     fun clearScanMsg() {
         _scanResultMsg.value = null
     }
-
-    suspend fun getEpisodesForDrama(dramaId: Long): List<EpisodeEntity> {
-        return db.episodeDao().getEpisodesByDramaId(dramaId)
-    }
 }

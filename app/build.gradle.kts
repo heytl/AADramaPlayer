@@ -1,5 +1,6 @@
 import java.util.Properties
-import java.io.FileInputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 
 plugins {
     id("com.android.application")
@@ -24,11 +25,11 @@ android {
         }
     }
 
-    // 加载本地配置用于签名，避免隐私泄露到 Git
+    // 更加健壮的 local.properties 加载逻辑
     val properties = Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { properties.load(it) }
+    val propertiesFile = project.rootProject.file("local.properties")
+    if (propertiesFile.exists()) {
+        propertiesFile.inputStream().use { properties.load(it) }
     }
 
     signingConfigs {
@@ -44,12 +45,26 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // 只有当密码配置存在时才应用签名
-            if (properties.containsKey("signing.storePassword")) {
+            // 只有当本地配置存在时才启用签名，否则降级为未签名打包
+            if (!properties.getProperty("signing.storePassword").isNullOrEmpty()) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
     }
+
+    // 自定义打包后的文件名
+    androidComponents {
+        onVariants { variant ->
+            variant.outputs.forEach { output ->
+                if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
+                    val date = SimpleDateFormat("yyyyMMdd").format(Date())
+                    val baseName = "阿阿短剧_v${defaultConfig.versionName}_${date}_${variant.name}"
+                    output.outputFileName.set("${baseName}.apk")
+                }
+            }
+        }
+    }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -102,14 +117,14 @@ dependencies {
     implementation("io.github.carguo:gsyvideoplayer-arm64:11.0.0")
     implementation("io.github.carguo:gsyvideoplayer-armv7a:11.0.0")
     
-    // View-based UI (needed for XML layouts like PlayerActivity)
+    // View-based UI
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.google.android.material:material:1.11.0")
 
-    // Coil (Image loading)
+    // Coil
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("io.coil-kt:coil-video:2.6.0")
 }

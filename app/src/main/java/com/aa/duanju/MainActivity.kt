@@ -6,16 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.aa.duanju.ui.library.LibraryScreen
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +23,7 @@ class MainActivity : ComponentActivity() {
         // 开启全屏沉浸模式，针对现代 Android (包括华为 HarmonyOS) 优化
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         
         setContent {
@@ -37,15 +32,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LibraryScreen(
-                        onNavigateToPlayer = { dramaId, episodeId ->
-                            com.aa.duanju.ui.player.PlayerActivity.start(
-                                this@MainActivity,
-                                dramaId,
-                                episodeId
-                            )
-                        }
-                    )
+                    LibraryScreen { dramaId, episodeId ->
+                        com.aa.duanju.ui.player.PlayerActivity.start(
+                            this@MainActivity,
+                            dramaId,
+                            episodeId
+                        )
+                    }
                 }
             }
         }

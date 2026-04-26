@@ -30,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
-import com.aa.duanju.db.dao.DramaWithProgress
 import com.aa.duanju.db.entity.DramaEntity
 import com.aa.duanju.db.entity.EpisodeEntity
 import kotlinx.coroutines.launch
@@ -62,7 +61,6 @@ fun LibraryScreen(
     var selectedDramaId by remember { mutableStateOf<Long?>(null) }
     var showEpisodeSelection by remember { mutableStateOf(false) }
     var showDirManagement by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
     
     val currentSelectedWithProgress = remember(selectedDramaId, dramasWithProgress) {
         dramasWithProgress.find { it.drama.id == selectedDramaId }
