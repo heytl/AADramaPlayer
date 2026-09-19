@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google()
         mavenCentral()
@@ -15,4 +16,15 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "AADuanJu"
-include(":app")
+include(
+    ":app",
+    ":core:model",
+    ":core:database",
+    ":core:media",
+    ":core:designsystem",
+    ":domain",
+    ":data",
+    ":feature:library",
+    ":feature:player",
+    ":benchmark",
+)

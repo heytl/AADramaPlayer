@@ -1,0 +1,42 @@
+package com.aa.duanju.data.di
+
+import android.content.Context
+import androidx.room.Room
+import androidx.work.WorkManager
+import com.aa.duanju.core.database.AADramaDatabase
+import com.aa.duanju.data.OfflineLibraryRepository
+import com.aa.duanju.data.OfflinePlaybackRepository
+import com.aa.duanju.data.WorkManagerLibrarySyncScheduler
+import com.aa.duanju.domain.LibraryRepository
+import com.aa.duanju.domain.LibrarySyncScheduler
+import com.aa.duanju.domain.PlaybackRepository
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class RepositoryModule {
+    @Binds abstract fun bindLibraryRepository(implementation: OfflineLibraryRepository): LibraryRepository
+    @Binds abstract fun bindPlaybackRepository(implementation: OfflinePlaybackRepository): PlaybackRepository
+    @Binds abstract fun bindSyncScheduler(implementation: WorkManagerLibrarySyncScheduler): LibrarySyncScheduler
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DataModule {
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): AADramaDatabase =
+        Room.databaseBuilder(context, AADramaDatabase::class.java, "drama_player_database")
+            .fallbackToDestructiveMigration()
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager = WorkManager.getInstance(context)
+}

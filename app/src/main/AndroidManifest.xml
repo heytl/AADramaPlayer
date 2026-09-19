@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- SAF-based access does not need MANAGE_EXTERNAL_STORAGE.
-         READ_EXTERNAL_STORAGE is kept for API < 33 fallback. -->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".AADramaApplication"
         android:allowBackup="true"
         android:icon="@drawable/new_icon"
         android:label="@string/app_name"
@@ -25,11 +20,15 @@
             </intent-filter>
         </activity>
         
-        <activity
-            android:name="com.aa.duanju.ui.player.PlayerActivity"
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AADramaPlayer" />
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                tools:node="remove" />
+        </provider>
     </application>
 
 </manifest>
