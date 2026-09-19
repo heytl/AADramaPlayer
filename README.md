@@ -1,6 +1,8 @@
-# 阿阿短剧 (AA Drama Player) 🎬
-
-一只糯叽叽的小猪，带你开启极致简单的本地短剧观看体验。
+<div align="center">
+  <img src="app/src/main/res/drawable/new_icon.png" width="128" height="128" style="border-radius: 20%">
+  <h1>阿阿短剧 (AA Drama Player) 🎬</h1>
+  <p>一只糯叽叽的小猪，带你开启极致简单的本地短剧观看体验。</p>
+</div>
 
 **阿阿短剧** 是一款专为本地短剧爱好者设计的极简播放器。它采用了“适老化”的设计理念，去除了所有复杂的社交和广告功能，回归播放本质。无论是年轻人还是长辈，都能一秒上手。
 
@@ -23,7 +25,7 @@
 - **UI 框架**：Jetpack Compose (声明式 UI，高性能渲染)
 - **播放引擎**：GSYVideoPlayer (深度定制，支持多种视频格式)
 - **数据库**：Room (支持 Flow 响应式查询与关联关系映射)
-- **图片/视频加载**：Coil + VideoFrameDecoder (自动抓取视频首帧作为高清封面)
+- **图片/视频加载**：后台预生成 WebP 视频封面，首页由 Coil 仅加载普通图片，避免滚动时进行视频解码。
 - **系统适配**：完美适配 Android 8.0 至 Android 15/16，全面兼容 SAF 存储访问框架。
 
 ---
