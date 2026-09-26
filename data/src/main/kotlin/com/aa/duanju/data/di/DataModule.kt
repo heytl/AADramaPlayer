@@ -11,6 +11,7 @@ import com.aa.duanju.data.WorkManagerLibrarySyncScheduler
 import com.aa.duanju.domain.LibraryRepository
 import com.aa.duanju.domain.LibrarySyncScheduler
 import com.aa.duanju.domain.PlaybackRepository
+import com.aa.duanju.domain.SettingsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
