@@ -108,18 +108,14 @@ fun LibraryScreen(
             TopAppBar(
                 title = { Text("阿阿短剧", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold) },
                 actions = {
-                    TextButton(onClick = { viewModel.setSourceDialogVisible(true) }) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("目录", fontSize = 16.sp)
+                    IconButton(onClick = { viewModel.setSourceDialogVisible(true) }) {
+                        Icon(Icons.Default.Add, contentDescription = "目录管理", modifier = Modifier.size(26.dp))
                     }
-                    TextButton(
+                    IconButton(
                         onClick = viewModel::rescanAll,
                         enabled = !state.isScanning && state.sources.isNotEmpty(),
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("刷新", fontSize = 16.sp)
+                        Icon(Icons.Default.Refresh, contentDescription = "刷新", modifier = Modifier.size(26.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -235,7 +231,7 @@ private fun ContinueWatchingCard(drama: DramaSummary, onClick: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text("上次看到这里", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .7f))
                 Text(drama.title, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text("第 ${episode.episodeNumber} 集 · 点击继续播放", fontSize = 16.sp)
+                Text("第 ${episode.episodeNumber} 集", fontSize = 16.sp)
             }
         }
     }
