@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.aa.duanju.core.model.DramaSummary
 import com.aa.duanju.domain.LibraryRepository
 import com.aa.duanju.domain.LibrarySyncScheduler
+import com.aa.duanju.domain.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -19,8 +20,8 @@ import kotlinx.coroutines.launch
 class LibraryViewModel @Inject constructor(
     private val repository: LibraryRepository,
     private val syncScheduler: LibrarySyncScheduler,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
-    private val showSourceDialog = MutableStateFlow(false)
     private val episodeSelection = MutableStateFlow<EpisodeSelection?>(null)
     private val effectChannel = Channel<LibraryUiEffect>(Channel.BUFFERED)
     val effects = effectChannel.receiveAsFlow()
@@ -29,17 +30,22 @@ class LibraryViewModel @Inject constructor(
         repository.observeLibrary(),
         repository.observeSources(),
         syncScheduler.observeStatus(),
-        showSourceDialog,
         episodeSelection,
-    ) { dramas, sources, sync, showSources, selection ->
+    ) { dramas, sources, sync, selection ->
         LibraryUiState(
             dramas = dramas,
             sources = sources,
             isScanning = sync.isRunning,
-            showSourceDialog = showSources,
             episodeSelection = selection,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState())
+
+    val autoPlay = settingsRepository.observeAutoPlay()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+    fun setAutoPlay(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setAutoPlay(enabled) }
+    }
 
     init {
         viewModelScope.launch {
@@ -52,10 +58,6 @@ class LibraryViewModel @Inject constructor(
                 wasRunning = status.isRunning
             }
         }
-    }
-
-    fun setSourceDialogVisible(visible: Boolean) {
-        showSourceDialog.value = visible
     }
 
     fun addSource(treeUri: String, displayName: String) {

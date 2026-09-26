@@ -25,3 +25,8 @@ interface LibrarySyncScheduler {
     fun enqueueAll()
     fun observeStatus(): Flow<SyncStatus>
 }
+
+interface SettingsRepository {
+    fun observeAutoPlay(): Flow<Boolean>
+    suspend fun setAutoPlay(enabled: Boolean)
+}

@@ -18,7 +18,6 @@ data class LibraryUiState(
     val dramas: List<DramaSummary> = emptyList(),
     val sources: List<SourceDirectory> = emptyList(),
     val isScanning: Boolean = false,
-    val showSourceDialog: Boolean = false,
     val episodeSelection: EpisodeSelection? = null,
 ) {
     val recent: DramaSummary?

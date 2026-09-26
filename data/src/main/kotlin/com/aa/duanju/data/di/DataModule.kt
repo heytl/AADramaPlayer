@@ -6,6 +6,7 @@ import androidx.work.WorkManager
 import com.aa.duanju.core.database.AADramaDatabase
 import com.aa.duanju.data.OfflineLibraryRepository
 import com.aa.duanju.data.OfflinePlaybackRepository
+import com.aa.duanju.data.PreferencesSettingsRepository
 import com.aa.duanju.data.WorkManagerLibrarySyncScheduler
 import com.aa.duanju.domain.LibraryRepository
 import com.aa.duanju.domain.LibrarySyncScheduler
@@ -24,6 +25,7 @@ abstract class RepositoryModule {
     @Binds abstract fun bindLibraryRepository(implementation: OfflineLibraryRepository): LibraryRepository
     @Binds abstract fun bindPlaybackRepository(implementation: OfflinePlaybackRepository): PlaybackRepository
     @Binds abstract fun bindSyncScheduler(implementation: WorkManagerLibrarySyncScheduler): LibrarySyncScheduler
+    @Binds abstract fun bindSettingsRepository(implementation: PreferencesSettingsRepository): SettingsRepository
 }
 
 @Module

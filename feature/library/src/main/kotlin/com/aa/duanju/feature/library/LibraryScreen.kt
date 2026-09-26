@@ -1,11 +1,6 @@
 package com.aa.duanju.feature.library
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.DocumentsContract
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,17 +24,15 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -55,9 +48,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,26 +65,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.aa.duanju.core.model.DramaSummary
 import com.aa.duanju.core.model.Episode
-import com.aa.duanju.core.model.SourceDirectory
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
     onNavigateToPlayer: (dramaId: Long, episodeId: Long) -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: LibraryViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
-        uri ?: return@rememberLauncherForActivityResult
-        runCatching {
-            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            val treeId = DocumentsContract.getTreeDocumentId(uri)
-            val name = treeId.substringAfterLast('/').ifBlank { "新目录" }
-            viewModel.addSource(uri.toString(), name)
-        }.onFailure { Toast.makeText(context, "无法读取目录：${it.message.orEmpty()}", Toast.LENGTH_LONG).show() }
-    }
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -108,14 +90,14 @@ fun LibraryScreen(
             TopAppBar(
                 title = { Text("阿阿短剧", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold) },
                 actions = {
-                    IconButton(onClick = { viewModel.setSourceDialogVisible(true) }) {
-                        Icon(Icons.Default.Add, contentDescription = "目录管理", modifier = Modifier.size(26.dp))
-                    }
                     IconButton(
                         onClick = viewModel::rescanAll,
                         enabled = !state.isScanning && state.sources.isNotEmpty(),
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = "刷新", modifier = Modifier.size(26.dp))
+                    }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "设置", modifier = Modifier.size(26.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -164,7 +146,7 @@ fun LibraryScreen(
 
                 if (state.dramas.isEmpty() && !state.isScanning) {
                     item(key = "empty", contentType = "empty") {
-                        EmptyLibrary(onAddSource = { folderPicker.launch(null) })
+                        EmptyLibrary(onOpenSettings = onNavigateToSettings)
                     }
                 }
 
@@ -198,15 +180,6 @@ fun LibraryScreen(
                 },
             )
         }
-    }
-
-    if (state.showSourceDialog) {
-        SourceDialog(
-            sources = state.sources,
-            onDismiss = { viewModel.setSourceDialogVisible(false) },
-            onAdd = { folderPicker.launch(null) },
-            onRemove = viewModel::removeSource,
-        )
     }
 }
 
@@ -281,15 +254,15 @@ private fun DramaCard(
 }
 
 @Composable
-private fun EmptyLibrary(onAddSource: () -> Unit) {
+private fun EmptyLibrary(onOpenSettings: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 64.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text("还没有短剧", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("添加包含视频的根目录即可开始扫描", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Button(onClick = onAddSource) { Text("添加目录") }
+        Text("去设置里添加存放视频的文件夹即可开始", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Button(onClick = onOpenSettings) { Text("去设置") }
     }
 }
 
@@ -348,68 +321,4 @@ private fun EpisodeDialog(
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
     )
-}
-
-@Composable
-private fun SourceDialog(
-    sources: List<SourceDirectory>,
-    onDismiss: () -> Unit,
-    onAdd: () -> Unit,
-    onRemove: (Long) -> Unit,
-) {
-    var pendingRemoval by remember { mutableStateOf<SourceDirectory?>(null) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("目录管理", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(Modifier.fillMaxWidth()) {
-                if (sources.isEmpty()) {
-                    Text("暂无目录，请添加短剧根目录")
-                } else {
-                    LazyColumn(Modifier.heightIn(max = 300.dp)) {
-                        items(sources, key = { it.id }) { source ->
-                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
-                                    Text(source.displayName, fontWeight = FontWeight.Bold)
-                                    Text(source.treeUri, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 12.sp)
-                                }
-                                IconButton(onClick = { pendingRemoval = source }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "移除${source.displayName}", tint = MaterialTheme.colorScheme.error)
-                                }
-                            }
-                            HorizontalDivider()
-                        }
-                    }
-                }
-                Button(onClick = onAdd, modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
-                    Text("添加短剧目录", fontSize = 17.sp)
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } },
-    )
-
-    pendingRemoval?.let { source ->
-        AlertDialog(
-            onDismissRequest = { pendingRemoval = null },
-            title = { Text("移除这个目录？", fontWeight = FontWeight.Bold) },
-            text = {
-                Text("将从应用中移除“${source.displayName}”及播放记录，但不会删除手机里的视频文件。")
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingRemoval = null }) { Text("取消", fontSize = 17.sp) }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onRemove(source.id)
-                        pendingRemoval = null
-                    },
-                ) {
-                    Text("确认移除", color = MaterialTheme.colorScheme.error, fontSize = 17.sp)
-                }
-            },
-        )
-    }
 }
