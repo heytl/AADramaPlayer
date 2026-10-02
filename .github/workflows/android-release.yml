@@ -34,7 +34,18 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Install Android SDK packages
-        run: sdkmanager "platforms;android-35" "build-tools;34.0.0"
+        shell: bash
+        run: |
+          if [[ -z "${ANDROID_HOME:-}" ]]; then
+            echo "::error::ANDROID_HOME is not set by the runner image" >&2
+            exit 1
+          fi
+          sdkmanager_path="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [[ ! -x "$sdkmanager_path" ]]; then
+            echo "::error::Android SDK manager is missing or not executable: $sdkmanager_path" >&2
+            exit 1
+          fi
+          "$sdkmanager_path" --sdk_root="$ANDROID_HOME" --install "platforms;android-35" "build-tools;34.0.0"
 
       - name: Restore release signing configuration
         env:
