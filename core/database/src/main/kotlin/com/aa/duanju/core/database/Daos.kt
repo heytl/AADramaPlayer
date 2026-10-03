@@ -70,6 +70,9 @@ interface DramaDao {
     @Query("UPDATE dramas SET lastEpisodeId = :episodeId, lastWatchedAt = :playedAt WHERE id = :dramaId")
     suspend fun updateLastPlayed(dramaId: Long, episodeId: Long, playedAt: Long)
 
+    @Query("UPDATE dramas SET lastEpisodeId = NULL, lastWatchedAt = 0")
+    suspend fun clearLastPlayed()
+
     @Query("UPDATE dramas SET coverPath = :coverPath, coverFingerprint = :fingerprint WHERE id = :dramaId")
     suspend fun updateCover(dramaId: Long, coverPath: String, fingerprint: String)
 
@@ -108,4 +111,7 @@ interface EpisodeDao {
 
     @Query("UPDATE episodes SET resumePositionMs = :positionMs, lastWatchedAt = :playedAt WHERE id = :episodeId")
     suspend fun updateProgress(episodeId: Long, positionMs: Long, playedAt: Long)
+
+    @Query("UPDATE episodes SET resumePositionMs = 0, lastWatchedAt = 0")
+    suspend fun clearAllProgress()
 }

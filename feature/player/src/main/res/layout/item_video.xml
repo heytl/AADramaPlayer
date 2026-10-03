@@ -14,6 +14,6 @@
         android:layout_height="88dp"
         android:layout_gravity="center"
         android:contentDescription="已暂停"
-        android:src="@drawable/ic_center_pause"
+        android:src="@drawable/ic_center_play"
         android:visibility="gone" />
 </FrameLayout>

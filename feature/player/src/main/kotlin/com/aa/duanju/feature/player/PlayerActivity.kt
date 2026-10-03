@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.SystemBarStyle
@@ -14,7 +15,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.aa.duanju.core.model.PlaybackQueue
+import com.aa.duanju.domain.AfterDrama
+import com.aa.duanju.domain.PlayOrder
 import com.aa.duanju.domain.PlaybackRepository
+import com.aa.duanju.domain.SettingsRepository
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,6 +30,7 @@ import kotlinx.coroutines.withContext
 @AndroidEntryPoint
 class PlayerActivity : AppCompatActivity() {
     @Inject lateinit var playbackRepository: PlaybackRepository
+    @Inject lateinit var settingsRepository: SettingsRepository
 
     private lateinit var viewPager: ViewPager2
     private lateinit var recyclerView: RecyclerView
@@ -38,6 +43,8 @@ class PlayerActivity : AppCompatActivity() {
     private var pendingPosition = -1
     private var lastSavedEpisodeId = -1L
     private var lastSavedPosition = -1L
+    private var playOrder = PlayOrder.SEQUENTIAL
+    private var afterDrama = AfterDrama.AUTO_NEXT
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(
@@ -55,6 +62,21 @@ class PlayerActivity : AppCompatActivity() {
 
         adapter = VideoPagerAdapter(::togglePlayPause)
         viewPager.adapter = adapter
+        lifecycleScope.launch {
+            settingsRepository.observePlayOrder().collect { playOrder = it }
+        }
+        lifecycleScope.launch {
+            settingsRepository.observeAfterDrama().collect { afterDrama = it }
+        }
+        lifecycleScope.launch {
+            settingsRepository.observeKeepScreenOn().collect { keepOn ->
+                if (keepOn) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+            }
+        }
         recyclerView.addOnChildAttachStateChangeListener(object : RecyclerView.OnChildAttachStateChangeListener {
             override fun onChildViewAttachedToWindow(view: View) {
                 val holder = recyclerView.getChildViewHolder(view) as? VideoPagerAdapter.VideoViewHolder ?: return
@@ -127,7 +149,11 @@ class PlayerActivity : AppCompatActivity() {
         pendingPosition = -1
         holder.videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
             override fun onAutoComplete(url: String?, vararg objects: Any?) {
-                if (currentPosition < adapter.currentList.lastIndex) {
+                val size = adapter.currentList.size
+                if (playOrder == PlayOrder.SHUFFLE && size > 1) {
+                    val next = (0 until size).filter { it != currentPosition }.random()
+                    viewPager.setCurrentItem(next, true)
+                } else if (currentPosition < adapter.currentList.lastIndex) {
                     viewPager.setCurrentItem(currentPosition + 1, true)
                 } else {
                     playNextDrama()
@@ -141,7 +167,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun playNextDrama() {
         saveProgress(currentPosition)
-        val nextDramaId = queue?.nextDramaId
+        val nextDramaId = if (afterDrama == AfterDrama.STOP) null else queue?.nextDramaId
         if (nextDramaId == null) finish() else loadQueue(nextDramaId)
     }
 
@@ -180,13 +206,24 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onPause() {
         saveProgress(currentPosition)
+        // 切后台时若正在播放，先暂停并亮出中央图标；
+        // 切回前台时不再自动恢复播放，由用户点一下继续。
+        findHolder(currentPosition)?.let { holder ->
+            if (holder.videoPlayer.currentState == com.shuyu.gsyvideoplayer.video.base.GSYVideoView.CURRENT_STATE_PLAYING) {
+                holder.videoPlayer.onVideoPause()
+                title.visibility = View.VISIBLE
+                back.visibility = View.VISIBLE
+                holder.showCenterIcon()
+            }
+        }
         GSYVideoManager.onPause()
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        GSYVideoManager.onResume()
+        // 不再调用 GSYVideoManager.onResume()：保持切后台时的暂停状态，不自动播放，
+        // 避免“正在播放却显示暂停图标”的错乱。
     }
 
     override fun onDestroy() {

@@ -18,6 +18,7 @@ interface LibraryRepository {
 interface PlaybackRepository {
     suspend fun getPlaybackQueue(dramaId: Long): PlaybackQueue
     suspend fun saveProgress(episodeId: Long, positionMs: Long, playedAt: Long)
+    suspend fun clearAllProgress()
 }
 
 interface LibrarySyncScheduler {
@@ -29,4 +30,20 @@ interface LibrarySyncScheduler {
 interface SettingsRepository {
     fun observeAutoPlay(): Flow<Boolean>
     suspend fun setAutoPlay(enabled: Boolean)
+    fun observePlayOrder(): Flow<PlayOrder>
+    suspend fun setPlayOrder(order: PlayOrder)
+    fun observeKeepScreenOn(): Flow<Boolean>
+    suspend fun setKeepScreenOn(enabled: Boolean)
+    fun observeAfterDrama(): Flow<AfterDrama>
+    suspend fun setAfterDrama(after: AfterDrama)
+}
+
+enum class PlayOrder {
+    SEQUENTIAL,
+    SHUFFLE,
+}
+
+enum class AfterDrama {
+    AUTO_NEXT,
+    STOP,
 }

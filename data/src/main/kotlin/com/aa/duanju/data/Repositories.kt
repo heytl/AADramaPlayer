@@ -70,4 +70,11 @@ class OfflinePlaybackRepository @Inject constructor(
             database.dramaDao().updateLastPlayed(episode.dramaId, episodeId, playedAt)
         }
     }
+
+    override suspend fun clearAllProgress() {
+        database.withTransaction {
+            database.episodeDao().clearAllProgress()
+            database.dramaDao().clearLastPlayed()
+        }
+    }
 }
