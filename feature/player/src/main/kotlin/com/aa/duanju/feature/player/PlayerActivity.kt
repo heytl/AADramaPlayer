@@ -135,6 +135,7 @@ class PlayerActivity : AppCompatActivity() {
             }
         })
         holder.videoPlayer.startPlayLogic()
+        holder.hideCenterIcon()
         if (episode.resumePositionMs > 0) holder.videoPlayer.seekTo(episode.resumePositionMs)
     }
 
@@ -152,11 +153,13 @@ class PlayerActivity : AppCompatActivity() {
             title.visibility = View.VISIBLE
             back.visibility = View.VISIBLE
             player.showUi()
+            holder.showCenterIcon()
         } else {
             player.onVideoResume()
             title.visibility = View.GONE
             back.visibility = View.GONE
             player.hideUi()
+            holder.hideCenterIcon()
         }
     }
 

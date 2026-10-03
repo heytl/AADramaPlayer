@@ -7,4 +7,13 @@
         android:id="@+id/videoPlayer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/centerIcon"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_gravity="center"
+        android:contentDescription="已暂停"
+        android:src="@drawable/ic_center_pause"
+        android:visibility="gone" />
 </FrameLayout>
