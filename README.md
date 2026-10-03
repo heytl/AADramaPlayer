@@ -48,6 +48,28 @@
 
 ---
 
+## 📦 GitHub Actions 正式打包
+
+正式打包工作流位于 `.github/workflows/android-release.yml`，使用现有 JKS 生成签名 Release APK。
+
+1. 在仓库 **Settings → Secrets and variables → Actions → Repository secrets** 配置四项：
+
+   | Secret | 内容 |
+   | --- | --- |
+   | `KEYSTORE_BASE64` | `app/JKS/my-release-key.jks` 文件的 Base64 |
+   | `KEYSTORE_PASSWORD` | 本地 `signing.storePassword` 的值 |
+   | `KEY_ALIAS` | 本地 `signing.keyAlias` 的值 |
+   | `KEY_PASSWORD` | 本地 `signing.keyPassword` 的值 |
+
+2. 进入 **Actions → Android Release → Run workflow**，选择 `main` 后执行。推送代码到 `main` 也会自动打包；同一分支的新运行会取消尚未完成的旧运行。
+3. 成功后，在该次运行的 **Artifacts** 下载 `AA-Drama-release-apk`，解压得到 APK。`AA-Drama-release-mapping` 保存 R8 混淆映射，用于分析对应版本的异常堆栈。产物保留 30 天。
+
+工作流使用 JDK 17、Gradle Wrapper、Android SDK 35 和 Build Tools 34.0.0，执行 `:app:assembleRelease`。构建后必须通过 APK 验签，且证书 SHA-256 与现有本地正式包一致，才会上传产物。签名配置缺失会直接失败，临时签名文件始终清理。
+
+发布新版本前，在 `app/build.gradle.kts` 更新 `versionCode` 和 `versionName`。打包结果及源代码提交号显示在运行摘要中。
+
+---
+
 ## 📖 版本记录
 
 - **v1.0.0** (Initial Commit)
