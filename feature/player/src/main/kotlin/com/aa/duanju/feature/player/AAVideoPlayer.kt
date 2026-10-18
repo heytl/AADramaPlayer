@@ -4,6 +4,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 
 class AAVideoPlayer : StandardGSYVideoPlayer {
@@ -12,6 +15,10 @@ class AAVideoPlayer : StandardGSYVideoPlayer {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
     var onSingleTapListener: (() -> Unit)? = null
+
+    init {
+        applyNavBarInsets()
+    }
 
     override fun onClickUiToggle(event: MotionEvent?) {
         dismissGestureUi()
@@ -69,6 +76,30 @@ class AAVideoPlayer : StandardGSYVideoPlayer {
 
     private fun hideStartButton() {
         startButton?.visibility = View.GONE
+    }
+
+    /**
+     * 底部控制栏避开三大金刚键：edge-to-edge 下导航栏会压住底部，
+     * 给 GSY 的底部控制容器和细进度条加上导航栏高度的 bottomMargin。
+     * 手势导航时导航栏高度为 0，不影响。
+     */
+    private fun applyNavBarInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
+            val navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            mBottomContainer?.updateBottomMargin(navBottom)
+            mBottomProgressBar?.updateBottomMargin(navBottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(this)
+    }
+
+    private fun View.updateBottomMargin(bottom: Int) {
+        (layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+            if (lp.bottomMargin != bottom) {
+                lp.bottomMargin = bottom
+                layoutParams = lp
+            }
+        }
     }
 
     private fun dismissGestureUi() {
